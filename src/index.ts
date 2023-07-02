@@ -13,7 +13,7 @@ main()
   .then(async () => {
     // await connectDB();
 
-    startServer(v1, () => {
+    startServer(v1.router, () => {
       console.log("Server started");
     });
 

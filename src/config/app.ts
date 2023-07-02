@@ -11,12 +11,12 @@ const startServer: (router: express.Router, callback?: () => void) => { app: exp
 ) => {
     const app = express();
     const port = process.env.PORT || 3000;
+    const version = process.env.VERSION || "v1";
 
-    app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(morgan("dev"));
 
-    app.use(router);
+    app.use(`/api/${version}`, router);
 
     const server: Listen = app.listen(port, () => {
         if (process.env.NODE_ENV !== "test") {
