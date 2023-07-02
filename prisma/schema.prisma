@@ -9,22 +9,96 @@ datasource db {
   extensions = [uuidOssp(map: "uuid-ossp")]
 }
 
+// Notion like application:
+// - GreenBoard, manage projects with teams, tasks, organization, and more
+// - Meant for a Java Desktop application
+// - Will be used to manage the development of GreenBoard
+
 model User {
-  id           String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  email        String @unique
-  firstName    String
-  lastName     String
-  passwordHash String
-  role         Role   @relation(fields: [roleId], references: [id])
-  roleId       String @db.Uuid
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  active        Boolean  @default(true)
+  confirmed     Boolean  @default(false)
+  email         String   @unique
+  firstName     String
+  lastName      String
+  passwordHash  String
+  role          Role     @relation(fields: [roleId], references: [id])
+  roleId        String   @db.Uuid
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  teams         Team[]   @relation("members")
+  assignedTasks Task[]   @relation("assignedUsers")
+  createdTasks  Task[]
+  createdTeams  Team[]
+  tokens        Token[]
 
   @@map("users")
 }
 
 model Role {
-  id    String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name  String @unique
-  users User[]
+  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String  @unique
+  description String?
+  users       User[]
 
   @@map("roles")
+}
+
+model Project {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String
+  description String?
+  teams       Team[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tasks       Task[]
+
+  @@map("projects")
+}
+
+model Team {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String
+  description String?
+  projects    Project[]
+  members     User[]    @relation("members")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tasks       Task[]
+  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdById String?   @db.Uuid
+
+  @@map("teams")
+}
+
+model Task {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String
+  description   String?
+  project       Project  @relation(fields: [projectId], references: [id])
+  projectId     String   @db.Uuid
+  team          Team?    @relation(fields: [teamId], references: [id])
+  teamId        String?  @db.Uuid
+  status        String   @default("TODO")
+  priority      String   @default("LOW")
+  type          String   @default("TASK")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  assignedUsers User[]   @relation("assignedUsers")
+  author        User     @relation(fields: [authorId], references: [id])
+  authorId      String   @db.Uuid
+
+  @@map("tasks")
+}
+
+model Token {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  token     String   @unique
+  context   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.Uuid
+
+  @@map("tokens")
 }

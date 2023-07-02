@@ -4,44 +4,62 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient();
 async function seed() {
   try {
-
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-
-    const rolesToCreate = ["ADMIN", "USER", "SUPER_ADMIN"];
-    const createdRoles = rolesToCreate.map(async (role) => {
-      return await prisma.role.create({
-        data: {
-          name: role,
-        },
-      });
+    // Create SUPER_ADMIN role
+    const superAdminRole = await prisma.role.create({
+      data: {
+        name: 'SUPER_ADMIN',
+        description: 'Super Admin Role',
+      },
     });
 
-    console.log("Created roles:", createdRoles);
+    // Create SUPER_ADMIN user
+    const password = "Respons11"
+    const superAdminUser = await prisma.user.create({
+      data: {
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        passwordHash: password,
+        roleId: superAdminRole.id,
+      },
+    });
 
-    const usersToCreate: Prisma.UserCreateInput[] = [...Array(10)].map(() => {
-      const firstName = faker.person.firstName();
-      const lastName = faker.person.firstName();
-      return {
-        firstName,
-        lastName,
-        email: faker.internet.email({ firstName, lastName }),
-        passwordHash: faker.internet.password({ length: 16 }),
-        role: {
+    const team = await prisma.team.create({
+      data: {
+        name: 'Akatsuki',
+        description: 'Association de malfaiteurs, bandits, voyous, criminels, ninjas déserteurs de leur village',
+      },
+    });
+
+    const project = await prisma.project.create({
+      data: {
+        name: "Capture des bijuu",
+        description: "L'Akatsuki est une organisation criminelle composée de ninjas déserteurs de leur village, spécialisée dans les missions d'assassinat et de capture de bijū.",
+        teams: {
           connect: {
-            name: "USER",
+            id: team.id,
           },
         },
-      };
+      },
     });
 
-    usersToCreate.forEach(async (data) => {
-      await prisma.user.create({
-        data,
-      });
+
+    // add tasks to project
+    const tasks = await prisma.task.createMany({
+      data: [
+        {
+          name: 'Capture du démon à une queue',
+          description: 'Le démon à une queue, aussi appelé Ichibi, est un démon de type tanuki. Il est scellé dans le corps de Gaara, le Kazekage du village caché du Sable.',
+          projectId: project.id,
+          authorId: superAdminUser.id,
+        },
+      ],
     });
+
+
+    console.log('Seed data created successfully.');
   } catch (error) {
-    console.error("Error seeding data:", error);
+    console.error('Error seeding data:', error);
   } finally {
     await prisma.$disconnect();
   }
