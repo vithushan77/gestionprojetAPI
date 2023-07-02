@@ -2,15 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  // ... you will write your Prisma Client queries here
-  const usersWithPosts = await prisma.user.findMany({
-    include: {
-      posts: true,
-    },
-  });
-  console.dir(usersWithPosts, { depth: null });
-}
+async function main() {}
 
 main()
   .then(async () => {
