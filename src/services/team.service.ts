@@ -1,4 +1,4 @@
-import { PrismaClient, Team } from "@prisma/client";
+import { PrismaClient, Task, Team } from "@prisma/client";
 import { RedisClient } from "../config";
 
 export class TeamService {
@@ -12,6 +12,11 @@ export class TeamService {
         const team = await this.prismaClient.team.findUnique({
             where: {
                 id
+            },
+            select: {
+                id: true,
+                name: true,
+                tasks: true,
             },
         });
         return team;
@@ -46,5 +51,22 @@ export class TeamService {
     public async getTeams(): Promise<any> {
         const teams = await this.prismaClient.team.findMany();
         return teams;
+    }
+
+    public async addTasksToTeam(teamId: string, tasks: Task[]): Promise<Team> {
+        const team = await this.prismaClient.team.update({
+            where: {
+                id: teamId,
+            },
+            data: {
+                tasks: {
+                    connect: tasks.map((task) => ({ id: task.id })),
+                },
+            },
+            include: {
+                tasks: true,
+            },
+        });
+        return team;
     }
 }

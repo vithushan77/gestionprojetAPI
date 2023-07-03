@@ -21,6 +21,7 @@ export class TeamController {
         router.post("/", verifyAuthToken(), this.createTeam.bind(this));
         router.put("/:id", verifyAuthToken(), this.updateTeam.bind(this));
         router.delete("/:id", verifyAuthToken(), this.deleteTeam.bind(this));
+        router.post("/:id/tasks", verifyAuthToken(), this.addTasksToTeam.bind(this));
 
         return router;
     }
@@ -82,6 +83,22 @@ export class TeamController {
         } catch (error) {
             res.status(500).json({
                 message: "Failed to delete team",
+                error: error.message,
+            });
+        }
+    }
+
+    async addTasksToTeam(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const { tasks } = req.body;
+
+        try {
+            const team = await this.teamService.addTasksToTeam(id, tasks);
+            res.json(team);
+        }
+        catch (error) {
+            res.status(500).json({
+                message: "Failed to add tasks to team",
                 error: error.message,
             });
         }
