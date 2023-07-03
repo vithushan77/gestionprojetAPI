@@ -1,5 +1,4 @@
 import { PrismaClient, Role } from "@prisma/client";
-import { SecurityUtils } from "../utils";
 import { RedisClient } from "../config";
 
 export class RoleService {
