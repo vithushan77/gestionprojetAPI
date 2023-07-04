@@ -1,4 +1,4 @@
-import { PrismaClient, Task, Team } from "@prisma/client";
+import { PrismaClient, Task, Team, User } from "@prisma/client";
 import { RedisClient } from "../config";
 
 export class TeamService {
@@ -14,22 +14,21 @@ export class TeamService {
                 id
             },
             select: {
-                id: true,
-                name: true,
                 tasks: true,
+                members: true,
             },
         });
         return team;
     }
 
-    public async createTeam(data: Team): Promise<any> {
+    public async createTeam(data: Team): Promise<Team> {
         const team = await this.prismaClient.team.create({
             data,
         });
         return team;
     }
 
-    public async updateTeam(id: string, data: Team): Promise<any> {
+    public async updateTeam(id: string, data: Team): Promise<Team> {
         const team = await this.prismaClient.team.update({
             where: {
                 id
@@ -39,7 +38,7 @@ export class TeamService {
         return team;
     }
 
-    public async deleteTeam(id: string): Promise<any> {
+    public async deleteTeam(id: string): Promise<Team> {
         const team = await this.prismaClient.team.delete({
             where: {
                 id
@@ -48,7 +47,7 @@ export class TeamService {
         return team;
     }
 
-    public async getTeams(): Promise<any> {
+    public async getTeams(): Promise<Team[]> {
         const teams = await this.prismaClient.team.findMany();
         return teams;
     }
@@ -68,5 +67,46 @@ export class TeamService {
             },
         });
         return team;
+    }
+
+    public async getTeamTasks(id: string): Promise<Task[]> {
+        const team = await this.prismaClient.team.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                tasks: true,
+            },
+        });
+        return team.tasks;
+    }
+
+    public async addMembersToTeam(teamId: string, members: User[]): Promise<Team> {
+        const team = await this.prismaClient.team.update({
+            where: {
+                id: teamId,
+            },
+            data: {
+                members: {
+                    connect: members.map((member) => ({ id: member.id })),
+                },
+            },
+            include: {
+                members: true,
+            },
+        });
+        return team;
+    }
+
+    public async getTeamMembers(teamId: string): Promise<User[]> {
+        const team = await this.prismaClient.team.findUnique({
+            where: {
+                id: teamId,
+            },
+            include: {
+                members: true,
+            },
+        });
+        return team.members;
     }
 }

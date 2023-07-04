@@ -21,7 +21,12 @@ export class TeamController {
         router.post("/", verifyAuthToken(), this.createTeam.bind(this));
         router.put("/:id", verifyAuthToken(), this.updateTeam.bind(this));
         router.delete("/:id", verifyAuthToken(), this.deleteTeam.bind(this));
+
         router.post("/:id/tasks", verifyAuthToken(), this.addTasksToTeam.bind(this));
+        router.get("/:id/tasks", verifyAuthToken(), this.getTeamTasks.bind(this));
+
+        router.post("/:id/members", verifyAuthToken(), this.addMembersToTeam.bind(this));
+        router.get("/:id/members", verifyAuthToken(), this.getTeamMembers.bind(this));
 
         return router;
     }
@@ -99,6 +104,52 @@ export class TeamController {
         catch (error) {
             res.status(500).json({
                 message: "Failed to add tasks to team",
+                error: error.message,
+            });
+        }
+    }
+
+    async getTeamTasks(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+
+        try {
+            const tasks = await this.teamService.getTeamTasks(id);
+            res.json(tasks);
+        }
+        catch (error) {
+            res.status(500).json({
+                message: "Failed to get team tasks",
+                error: error.message,
+            });
+        }
+    }
+
+    async addMembersToTeam(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const { members } = req.body;
+
+        try {
+            const team = await this.teamService.addMembersToTeam(id, members);
+            res.json(team);
+        }
+        catch (error) {
+            res.status(500).json({
+                message: "Failed to add members to team",
+                error: error.message,
+            });
+        }
+    }
+
+    async getTeamMembers(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+
+        try {
+            const members = await this.teamService.getTeamMembers(id);
+            res.json(members);
+        }
+        catch (error) {
+            res.status(500).json({
+                message: "Failed to get team members",
                 error: error.message,
             });
         }
