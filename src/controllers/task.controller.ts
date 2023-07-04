@@ -22,6 +22,13 @@ export class TaskController {
         router.put("/:id", verifyAuthToken(), this.updateTask.bind(this));
         router.delete("/:id", verifyAuthToken(), this.deleteTask.bind(this));
 
+        // Routes for task attachments
+        router.get("/:taskId/attachments", verifyAuthToken(), this.getTaskAttachments.bind(this));
+        router.get("/attachments/:id", verifyAuthToken(), this.getTaskAttachmentById.bind(this));
+        router.post("/:taskId/attachments", verifyAuthToken(), this.createTaskAttachment.bind(this));
+        router.put("/attachments/:id", verifyAuthToken(), this.updateTaskAttachment.bind(this));
+        router.delete("/attachments/:id", verifyAuthToken(), this.deleteTaskAttachment.bind(this));
+
         return router;
     }
 
@@ -82,6 +89,71 @@ export class TaskController {
         } catch (error) {
             res.status(500).json({
                 message: "Failed to delete task",
+                error: error.message,
+            });
+        }
+    }
+
+    async getTaskAttachments(req: Request, res: Response): Promise<void> {
+        const { taskId } = req.params;
+        const attachments = await this.taskService.getTaskAttachments(taskId);
+        res.json(attachments);
+    }
+
+    async getTaskAttachmentById(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const attachment = await this.taskService.getTaskAttachmentById(id);
+
+        if (!attachment) {
+            res.status(404).json({
+                message: "Task attachment not found",
+            });
+            return;
+        }
+
+        res.json(attachment);
+    }
+
+    async createTaskAttachment(req: Request, res: Response): Promise<void> {
+        const { taskId } = req.params;
+        let attachmentData = req.body;
+
+        try {
+            attachmentData.taskId = taskId;
+            const createdAttachment = await this.taskService.createTaskAttachment(attachmentData);
+            res.json(createdAttachment);
+        } catch (error) {
+            res.status(500).json({
+                message: "Failed to create task attachment",
+                error: error.message,
+            });
+        }
+    }
+
+    async updateTaskAttachment(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const attachmentData = req.body;
+
+        try {
+            const updatedAttachment = await this.taskService.updateTaskAttachment(id, attachmentData);
+            res.json(updatedAttachment);
+        } catch (error) {
+            res.status(500).json({
+                message: "Failed to update task attachment",
+                error: error.message,
+            });
+        }
+    }
+
+    async deleteTaskAttachment(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+
+        try {
+            const deletedAttachment = await this.taskService.deleteTaskAttachment(id);
+            res.json(deletedAttachment);
+        } catch (error) {
+            res.status(500).json({
+                message: "Failed to delete task attachment",
                 error: error.message,
             });
         }

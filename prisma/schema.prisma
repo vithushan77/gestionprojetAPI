@@ -19,10 +19,7 @@ model Organization {
   name        String    @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  teams       Team[]
-  users       User[]    @relation("users")
   projects    Project[]
-  tasks       Task[]
   tags        Tag[]     @relation("organizationTags")
   createdBy   User?     @relation(fields: [createdById], references: [id])
   createdById String?   @db.Uuid
@@ -63,7 +60,6 @@ model User {
   comments             Comment[]
   mentionnedComments   Comment[]      @relation("mentions")
   notifications        Notification[]
-  organizations        Organization[] @relation("users")
   createdOrganizations Organization[]
   pinnedProjects       Project[]      @relation("pinnedProjects")
   pinnedTeams          Team[]         @relation("pinnedTeams")
@@ -110,50 +106,46 @@ model Project {
 }
 
 model Team {
-  id             String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name           String
-  description    String?
-  projects       Project[]
-  members        User[]        @relation("members")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  tasks          Task[]
-  createdBy      User?         @relation(fields: [createdById], references: [id])
-  createdById    String?       @db.Uuid
-  tags           Tag[]         @relation("teamTags")
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?       @db.Uuid
-  pinnedUsers    User[]        @relation("pinnedTeams")
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String
+  description String?
+  projects    Project[]
+  members     User[]    @relation("members")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tasks       Task[]
+  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdById String?   @db.Uuid
+  tags        Tag[]     @relation("teamTags")
+  pinnedUsers User[]    @relation("pinnedTeams")
 
   @@map("teams")
 }
 
 model Task {
-  id             String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name           String
-  description    String?
-  project        Project          @relation(fields: [projectId], references: [id])
-  projectId      String           @db.Uuid
-  team           Team?            @relation(fields: [teamId], references: [id])
-  teamId         String?          @db.Uuid
-  status         String           @default("TODO")
-  priority       String           @default("LOW")
-  type           String           @default("TASK")
-  dueDate        DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  assignedUsers  User[]           @relation("assignedUsers")
-  author         User             @relation(fields: [authorId], references: [id])
-  authorId       String           @db.Uuid
-  Comment        Comment[]
-  tags           Tag[]            @relation("taskTags")
-  attachments    TaskAttachment[]
-  subTasks       Task[]           @relation("subTasks")
-  parentTask     Task?            @relation("subTasks", fields: [parentTaskId], references: [id])
-  parentTaskId   String?          @db.Uuid
-  organization   Organization?    @relation(fields: [organizationId], references: [id])
-  organizationId String?          @db.Uuid
-  pinnedUsers    User[]           @relation("pinnedTasks")
+  id            String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String
+  description   String?
+  project       Project          @relation(fields: [projectId], references: [id])
+  projectId     String           @db.Uuid
+  team          Team?            @relation(fields: [teamId], references: [id])
+  teamId        String?          @db.Uuid
+  status        String           @default("TODO")
+  priority      String           @default("LOW")
+  type          String           @default("TASK")
+  dueDate       DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  assignedUsers User[]           @relation("assignedUsers")
+  author        User             @relation(fields: [authorId], references: [id])
+  authorId      String           @db.Uuid
+  Comment       Comment[]
+  tags          Tag[]            @relation("taskTags")
+  attachments   TaskAttachment[]
+  subTasks      Task[]           @relation("subTasks")
+  parentTask    Task?            @relation("subTasks", fields: [parentTaskId], references: [id])
+  parentTaskId  String?          @db.Uuid
+  pinnedUsers   User[]           @relation("pinnedTasks")
 
   @@map("tasks")
 }
