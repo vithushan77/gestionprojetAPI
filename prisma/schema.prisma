@@ -15,22 +15,24 @@ datasource db {
 // - Will be used to manage the development of GreenBoard
 
 model User {
-  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  active        Boolean  @default(true)
-  confirmed     Boolean  @default(false)
-  email         String   @unique
-  firstName     String
-  lastName      String
-  passwordHash  String
-  role          Role     @relation(fields: [roleId], references: [id])
-  roleId        String   @db.Uuid
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  teams         Team[]   @relation("members")
-  assignedTasks Task[]   @relation("assignedUsers")
-  createdTasks  Task[]
-  createdTeams  Team[]
-  tokens        Token[]
+  id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  active             Boolean   @default(true)
+  confirmed          Boolean   @default(false)
+  email              String    @unique
+  firstName          String
+  lastName           String
+  passwordHash       String
+  role               Role      @relation(fields: [roleId], references: [id])
+  roleId             String    @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  teams              Team[]    @relation("members")
+  assignedTasks      Task[]    @relation("assignedUsers")
+  createdTasks       Task[]
+  createdTeams       Team[]
+  tokens             Token[]
+  comments           Comment[]
+  mentionnedComments Comment[] @relation("mentions")
 
   @@map("users")
 }
@@ -72,23 +74,39 @@ model Team {
 }
 
 model Task {
-  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name          String
   description   String?
-  project       Project  @relation(fields: [projectId], references: [id])
-  projectId     String   @db.Uuid
-  team          Team?    @relation(fields: [teamId], references: [id])
-  teamId        String?  @db.Uuid
-  status        String   @default("TODO")
-  priority      String   @default("LOW")
-  type          String   @default("TASK")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  assignedUsers User[]   @relation("assignedUsers")
-  author        User     @relation(fields: [authorId], references: [id])
-  authorId      String   @db.Uuid
+  project       Project   @relation(fields: [projectId], references: [id])
+  projectId     String    @db.Uuid
+  team          Team?     @relation(fields: [teamId], references: [id])
+  teamId        String?   @db.Uuid
+  status        String    @default("TODO")
+  priority      String    @default("LOW")
+  type          String    @default("TASK")
+  dueDate       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  assignedUsers User[]    @relation("assignedUsers")
+  author        User      @relation(fields: [authorId], references: [id])
+  authorId      String    @db.Uuid
+  Comment       Comment[]
 
   @@map("tasks")
+}
+
+model Comment {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @db.Uuid
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    String   @db.Uuid
+  mentions  User[]   @relation("mentions")
+
+  @@map("comments")
 }
 
 model Token {
