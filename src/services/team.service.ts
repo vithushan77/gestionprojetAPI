@@ -13,9 +13,12 @@ export class TeamService {
             where: {
                 id
             },
-            select: {
+            include: {
                 tasks: true,
                 members: true,
+                projects: true,
+                tags: true,
+                organization: true,
             },
         });
         return team;
@@ -26,6 +29,12 @@ export class TeamService {
         if (data.members) {
             data.members = {
                 connect: data.members.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.projects) {
+            data.projects = {
+                connect: data.projects.map(({ id }: { id: string }) => ({ id }))
             }
         }
 

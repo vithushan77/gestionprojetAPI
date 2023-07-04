@@ -13,11 +13,40 @@ export class TaskService {
             where: {
                 id
             },
+            include: {
+                attachments: true,
+                tags: true,
+                assignedUsers: true,
+                author: true,
+                comments: true,
+                subTasks: true,
+                parentTask: true,
+                team: true
+            }
         });
         return task;
     }
 
-    public async createTask(data: Task): Promise<any> {
+    public async createTask(data: any): Promise<any> {
+
+        if (data.attachments) {
+            data.attachments = {
+                connect: data.attachments.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.tags) {
+            data.tags = {
+                connect: data.tags.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.assignedUsers) {
+            data.assignedUsers = {
+                connect: data.assignedUsers.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
         const task = await this.prismaClient.task.create({
             data,
         });

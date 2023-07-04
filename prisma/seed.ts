@@ -104,11 +104,6 @@ async function seedUsers() {
             name: user.role
           }
         },
-        organizations: {
-          connect: {
-            name: ORGANIZATION_NAME
-          }
-        },
         teams: {
           create: {
             name: faker.company.name(),

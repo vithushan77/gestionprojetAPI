@@ -101,7 +101,6 @@ CREATE TABLE "tasks" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "authorId" UUID NOT NULL,
     "parentTaskId" UUID,
-    "organizationId" UUID,
 
     CONSTRAINT "tasks_pkey" PRIMARY KEY ("id")
 );
@@ -163,12 +162,6 @@ CREATE TABLE "notifications" (
     "userId" UUID NOT NULL,
 
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "_users" (
-    "A" UUID NOT NULL,
-    "B" UUID NOT NULL
 );
 
 -- CreateTable
@@ -250,6 +243,9 @@ CREATE TABLE "_teamTags" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "organizations_name_key" ON "organizations"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
@@ -263,12 +259,6 @@ CREATE UNIQUE INDEX "tokens_token_key" ON "tokens"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "tags_name_key" ON "tags"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_users_AB_unique" ON "_users"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_users_B_index" ON "_users"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_organizationTags_AB_unique" ON "_organizationTags"("A", "B");
@@ -376,9 +366,6 @@ ALTER TABLE "tasks" ADD CONSTRAINT "tasks_authorId_fkey" FOREIGN KEY ("authorId"
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_parentTaskId_fkey" FOREIGN KEY ("parentTaskId") REFERENCES "tasks"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tasks" ADD CONSTRAINT "tasks_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "task_attachments" ADD CONSTRAINT "task_attachments_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -395,12 +382,6 @@ ALTER TABLE "tokens" ADD CONSTRAINT "tokens_userId_fkey" FOREIGN KEY ("userId") 
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_users" ADD CONSTRAINT "_users_A_fkey" FOREIGN KEY ("A") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_users" ADD CONSTRAINT "_users_B_fkey" FOREIGN KEY ("B") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_organizationTags" ADD CONSTRAINT "_organizationTags_A_fkey" FOREIGN KEY ("A") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

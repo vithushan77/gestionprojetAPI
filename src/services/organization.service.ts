@@ -8,24 +8,28 @@ export class OrganizationService {
         this.prismaClient = prismaClient;
     }
 
+    includeAll() {
+        return {
+            tags: true,
+            projects: {
+                include: {
+                    teams: {
+                        include: {
+                            members: true,
+                        }
+                    },
+                    tasks: true,
+                }
+            }
+        }
+    }
+
     public async getOrganizationById(id: string): Promise<any> {
         const organization = await this.prismaClient.organization.findUnique({
             where: {
                 id
             },
-            include: {
-                tasks: true,
-                projects: {
-                    include: {
-                        teams: {
-                            include: {
-                                members: true,
-                            }
-                        },
-                        tasks: true,
-                    }
-                }
-            },
+            include: this.includeAll(),
         });
         return organization;
     }
@@ -68,33 +72,20 @@ export class OrganizationService {
         return organizations;
     }
 
-    public async addTasksToOrganization(organizationId: string, tasks: Task[]): Promise<Organization> {
-        const organization = await this.prismaClient.organization.update({
-            where: {
-                id: organizationId,
-            },
-            data: {
-                tasks: {
-                    connect: tasks.map((task) => ({ id: task.id })),
-                },
-            },
-            include: {
-                tasks: true,
-            },
-        });
-        return organization;
-    }
-
     public async getOrganizationTasks(id: string): Promise<Task[]> {
         const organization = await this.prismaClient.organization.findUnique({
             where: {
                 id,
             },
-            include: {
-                tasks: true,
+            select: {
+                projects: {
+                    select: {
+                        tasks: true,
+                    }
+                }
             },
         });
-        return organization.tasks;
+        return organization.projects.reduce((acc, project) => [...acc, ...project.tasks], []);
     }
 
     public async addTeamsToOrganization(organizationId: string, teams: Team[]): Promise<Organization> {

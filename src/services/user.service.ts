@@ -30,9 +30,16 @@ export class UserService {
     return user;
   }
 
-  public async createUser(data: User & { password: string }): Promise<any> {
+  public async createUser(data: any): Promise<any> {
     data.passwordHash = SecurityUtils.hashPassword(data.password);
     delete data.password;
+
+    if (data.teams) {
+      data.teams = {
+        connect: data.teams.map(({ id }: { id: string }) => ({ id }))
+      }
+    }
+
     const user = await this.prismaClient.user.create({
       data,
     });

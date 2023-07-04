@@ -20,6 +20,7 @@ model Organization {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   projects    Project[]
+  teams       Team[]
   tags        Tag[]     @relation("organizationTags")
   createdBy   User?     @relation(fields: [createdById], references: [id])
   createdById String?   @db.Uuid
@@ -106,18 +107,20 @@ model Project {
 }
 
 model Team {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String
-  description String?
-  projects    Project[]
-  members     User[]    @relation("members")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  tasks       Task[]
-  createdBy   User?     @relation(fields: [createdById], references: [id])
-  createdById String?   @db.Uuid
-  tags        Tag[]     @relation("teamTags")
-  pinnedUsers User[]    @relation("pinnedTeams")
+  id             String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name           String
+  description    String?
+  projects       Project[]
+  members        User[]        @relation("members")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  tasks          Task[]
+  createdBy      User?         @relation(fields: [createdById], references: [id])
+  createdById    String?       @db.Uuid
+  tags           Tag[]         @relation("teamTags")
+  pinnedUsers    User[]        @relation("pinnedTeams")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
 
   @@map("teams")
 }
@@ -139,7 +142,7 @@ model Task {
   assignedUsers User[]           @relation("assignedUsers")
   author        User             @relation(fields: [authorId], references: [id])
   authorId      String           @db.Uuid
-  Comment       Comment[]
+  comments      Comment[]
   tags          Tag[]            @relation("taskTags")
   attachments   TaskAttachment[]
   subTasks      Task[]           @relation("subTasks")

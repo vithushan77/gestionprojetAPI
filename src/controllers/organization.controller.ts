@@ -22,7 +22,6 @@ export class OrganizationController {
         router.put("/:id", verifyAuthToken(), this.updateOrganization.bind(this));
         router.delete("/:id", verifyAuthToken(), this.deleteOrganization.bind(this));
 
-        router.post("/:id/tasks", verifyAuthToken(), this.addTasksToOrganization.bind(this));
         router.get("/:id/tasks", verifyAuthToken(), this.getOrganizationTasks.bind(this));
 
         router.post("/:id/teams", verifyAuthToken(), this.addTeamsToOrganization.bind(this));
@@ -88,22 +87,6 @@ export class OrganizationController {
         } catch (error) {
             res.status(500).json({
                 message: "Failed to delete organization",
-                error: error.message,
-            });
-        }
-    }
-
-    async addTasksToOrganization(req: Request, res: Response): Promise<void> {
-        const { id } = req.params;
-        const { tasks } = req.body;
-
-        try {
-            const organization = await this.organizationService.addTasksToOrganization(id, tasks);
-            res.json(organization);
-        }
-        catch (error) {
-            res.status(500).json({
-                message: "Failed to add tasks to organization",
                 error: error.message,
             });
         }
