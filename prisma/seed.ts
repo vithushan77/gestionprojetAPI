@@ -1,69 +1,133 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, Role } from "@prisma/client";
 import { faker } from "@faker-js/faker";
+
+const ORGANIZATION_NAME = "My Organization";
+const ROLES = [
+  {
+    name: "ADMIN",
+    description: "This is the admin role, it most of the permissions. There is only one role above this one, the super admin role."
+  },
+  {
+    name: "USER",
+    description: "This is the user role, it has the permissions necessary to use the application."
+  },
+  {
+    name: "SUPER_ADMIN",
+    description: "This is the super admin role, it has all the permissions."
+  },
+  {
+    name: "GUEST",
+    description: "This is the guest role, it has the permissions necessary to visit the application."
+  }
+]
+const USERS = [
+  {
+    email: "user@mail.com",
+    role: "USER",
+    firstName: "user",
+    lastName: "user",
+    username: "user",
+  },
+  {
+    email: "admin@mail.com",
+    role: "ADMIN",
+    firstName: "admin",
+    lastName: "admin",
+    username: "admin",
+  },
+  {
+    email: "superadmin@mail.com",
+    role: "SUPER_ADMIN",
+    firstName: "superadmin",
+    lastName: "superadmin",
+    username: "superadmin",
+  },
+  {
+    email: "guest@mail.com",
+    role: "GUEST",
+    firstName: "guest",
+    lastName: "guest",
+    username: "guest",
+  },
+];
 
 const prisma = new PrismaClient();
 async function seed() {
   try {
-    // Create SUPER_ADMIN role
-    const superAdminRole = await prisma.role.create({
-      data: {
-        name: 'SUPER_ADMIN',
-        description: 'Super Admin Role',
-      },
-    });
 
-    // Create SUPER_ADMIN user
-    const password = "Respons11"
-    const superAdminUser = await prisma.user.create({
-      data: {
-        email: 'admin@example.com',
-        firstName: 'Admin',
-        lastName: 'User',
-        passwordHash: password,
-        roleId: superAdminRole.id,
-      },
-    });
+    // delete all data
+    await prisma.user.deleteMany()
+    await prisma.team.deleteMany()
+    await prisma.organization.deleteMany()
+    await prisma.role.deleteMany()
 
-    const team = await prisma.team.create({
-      data: {
-        name: 'Akatsuki',
-        description: 'Association de malfaiteurs, bandits, voyous, criminels, ninjas déserteurs de leur village',
-      },
-    });
-
-    const project = await prisma.project.create({
-      data: {
-        name: "Capture des bijuu",
-        description: "L'Akatsuki est une organisation criminelle composée de ninjas déserteurs de leur village, spécialisée dans les missions d'assassinat et de capture de bijū.",
-        teams: {
-          connect: {
-            id: team.id,
-          },
-        },
-      },
-    });
-
-
-    // add tasks to project
-    const tasks = await prisma.task.createMany({
-      data: [
-        {
-          name: 'Capture du démon à une queue',
-          description: 'Le démon à une queue, aussi appelé Ichibi, est un démon de type tanuki. Il est scellé dans le corps de Gaara, le Kazekage du village caché du Sable.',
-          projectId: project.id,
-          authorId: superAdminUser.id,
-        },
-      ],
-    });
-
-
-    console.log('Seed data created successfully.');
+    await seedRoles()
+    await seedOrganization()
+    await seedUsers()
   } catch (error) {
     console.error('Error seeding data:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
+
+async function seedRoles() {
+  console.log('🔑 Seeding roles...');
+
+  const createdRoles = await prisma.role.createMany({
+    data: ROLES
+  })
+
+  console.log('🔑 Seeded roles:', createdRoles);
+}
+
+async function seedOrganization() {
+  console.log('🌐 Seeding organization...')
+  const organization = await prisma.organization.create({
+    data: {
+      name: ORGANIZATION_NAME
+    }
+  })
+
+  console.log('🌐 Seeded organization:', organization.name)
+}
+
+async function seedUsers() {
+  console.log('👤 Seeding users...')
+  const users = USERS.map(async (user) => {
+    return await prisma.user.create({
+      data: {
+        ...user,
+        passwordHash: faker.internet.password(),
+        role: {
+          connect: {
+            name: user.role
+          }
+        },
+        organizations: {
+          connect: {
+            name: ORGANIZATION_NAME
+          }
+        },
+        teams: {
+          create: {
+            name: faker.company.name(),
+            description: faker.company.catchPhraseDescriptor(),
+            organization: {
+              connect: {
+                name: ORGANIZATION_NAME
+              }
+            },
+          }
+        },
+      }
+    })
+  })
+
+  const createdUsers = await Promise.all(users)
+  console.log('👤 Seeded users:', createdUsers.length)
+}
+
 
 seed()
   .then(async () => {

@@ -21,7 +21,14 @@ export class TeamService {
         return team;
     }
 
-    public async createTeam(data: Team): Promise<Team> {
+    public async createTeam(data: any): Promise<Team> {
+
+        if (data.members) {
+            data.members = {
+                connect: data.members.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
         const team = await this.prismaClient.team.create({
             data,
         });
