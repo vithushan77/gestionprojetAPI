@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { initClient } from "../../config/redis";
 import { PrismaClient } from "@prisma/client";
-import { ProjectController, RoleController, TaskController, TeamController, TokenController, UserController } from "../../controllers";
+import { CommentController, ProjectController, RoleController, TaskController, TeamController, TokenController, UserController } from "../../controllers";
 
 const router = Router();
 const redisClient = initClient();
@@ -13,6 +13,7 @@ const projectController = new ProjectController(redisClient, prismaClient);
 const teamController = new TeamController(redisClient, prismaClient);
 const tokenController = new TokenController(redisClient, prismaClient);
 const taskController = new TaskController(redisClient, prismaClient);
+const commentController = new CommentController(redisClient, prismaClient);
 
 router.get("/ping", (req, res) => {
     res.status(200).json({
@@ -26,5 +27,6 @@ router.use("/projects", projectController.routes())
 router.use("/teams", teamController.routes())
 router.use("/tokens", tokenController.routes())
 router.use("/tasks", taskController.routes())
+router.use("/comments", commentController.routes())
 
 export { router };

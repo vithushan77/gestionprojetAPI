@@ -96,15 +96,18 @@ model Task {
 }
 
 model Comment {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  String   @db.Uuid
-  task      Task     @relation(fields: [taskId], references: [id])
-  taskId    String   @db.Uuid
-  mentions  User[]   @relation("mentions")
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  content    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  author     User      @relation(fields: [authorId], references: [id])
+  authorId   String    @db.Uuid
+  task       Task      @relation(fields: [taskId], references: [id])
+  taskId     String    @db.Uuid
+  mentions   User[]    @relation("mentions")
+  answerTo   Comment?  @relation("comments", fields: [answerToId], references: [id])
+  answerToId String?   @db.Uuid
+  answers    Comment[] @relation("comments")
 
   @@map("comments")
 }
