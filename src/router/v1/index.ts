@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { NextFunction, Request, Response, Router } from "express";
 import { initClient } from "../../config/redis";
 import { CommentController, OrganizationController, ProjectController, RoleController, TagController, TaskController, TeamController, TokenController, TrashController, UserController } from "../../controllers";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 const router = Router();
 const redisClient = initClient();
@@ -19,27 +19,7 @@ const organizationController = new OrganizationController(redisClient, prismaCli
 const trashController = new TrashController(redisClient, prismaClient);
 const tagController = new TagController(redisClient, prismaClient);
 
-class ResponseError extends Error {
-    status: number;
-    code?: string;
-
-    constructor(message: string, status: number, code?: string) {
-        super(message);
-        this.name = "ResponseError";
-        this.status = status;
-        this.code = code;
-    }
-}
-
-class PingNotFoundException extends ResponseError {
-
-    constructor() {
-        super("Ping not found", 404, "E1000");
-    }
-}
-
 router.get("/ping", (req, res) => {
-    throw new PingNotFoundException();
     res.status(200).json({
         message: "pong",
     });
@@ -58,17 +38,6 @@ router.use("/tag", tagController.routes())
 
 // error handler
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-
-    console.error(err);
-
-    if (err.name === "ResponseError") {
-        const responseError = err as ResponseError;
-        return res.status(responseError.status).json({
-            message: responseError.message,
-            code: responseError.code,
-            name: responseError.name,
-        });
-    }
 
     if (err.name === "PrismaClientKnownRequestError") {
         let prismaError = err as PrismaClientKnownRequestError;
