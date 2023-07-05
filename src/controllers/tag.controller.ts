@@ -47,43 +47,22 @@ export class TagController {
   async createTag(req: Request, res: Response): Promise<void> {
     const tagData = req.body;
 
-    try {
-      const createdTag = await this.tagService.createTag(tagData);
-      res.json(createdTag);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to create tag",
-        error: error.message,
-      });
-    }
+    const createdTag = await this.tagService.createTag(tagData);
+    res.json(createdTag);
   }
 
   async updateTag(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const tagData = req.body;
 
-    try {
-      const updatedTag = await this.tagService.updateTag(id, tagData);
-      res.json(updatedTag);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to update tag",
-        error: error.message,
-      });
-    }
+    const updatedTag = await this.tagService.updateTag(id, tagData);
+    res.json(updatedTag);
   }
 
   async deleteTag(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
-    try {
-      const deletedTag = await this.tagService.deleteTag(id);
-      res.json(deletedTag);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to delete tag",
-        error: error.message,
-      });
-    }
+    const deletedTag = await this.tagService.deleteTag(id);
+    res.json(deletedTag);
   }
 }

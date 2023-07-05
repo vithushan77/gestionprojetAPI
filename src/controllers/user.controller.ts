@@ -1,8 +1,9 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import { UserService } from "../services";
 import { verifyAuthToken } from "../middlewares";
 import { PrismaClient } from "@prisma/client";
 import { RedisClient } from "../config";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 export class UserController {
   private userService: UserService;
@@ -47,43 +48,22 @@ export class UserController {
   async createUser(req: Request, res: Response): Promise<void> {
     const userData = req.body;
 
-    try {
-      const createdUser = await this.userService.createUser(userData);
-      res.json(createdUser);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to create user",
-        error: error.message,
-      });
-    }
+    const createdUser = await this.userService.createUser(userData);
+    res.json(createdUser);
   }
 
   async updateUser(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const userData = req.body;
 
-    try {
-      const updatedUser = await this.userService.updateUser(id, userData);
-      res.json(updatedUser);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to update user",
-        error: error.message,
-      });
-    }
+    const updatedUser = await this.userService.updateUser(id, userData);
+    res.json(updatedUser);
   }
 
-  async deleteUser(req: Request, res: Response): Promise<void> {
+  async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { id } = req.params;
 
-    try {
-      const deletedUser = await this.userService.deleteUser(id);
-      res.json(deletedUser);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to delete user",
-        error: error.message,
-      });
-    }
+    const deletedUser = await this.userService.deleteUser(id);
+    res.json(deletedUser);
   }
 }

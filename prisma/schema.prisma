@@ -49,7 +49,7 @@ model User {
   passwordHash         String
   avatar               String?
   username             String         @unique
-  role                 Role           @relation(fields: [roleId], references: [id])
+  role                 Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
   roleId               String         @db.Uuid
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -67,6 +67,7 @@ model User {
   pinnedTasks          Task[]         @relation("pinnedTasks")
   pinnedComments       Comment[]      @relation("pinnedComments")
   pinnedOrganizations  Organization[] @relation("pinnedOrganizations")
+  activities           Activity[]
 
   @@map("users")
 }
@@ -77,6 +78,8 @@ model Activity {
   updatedAt DateTime @updatedAt
   metadata  Json?
   type      String
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?  @db.Uuid
 
   @@map("activities")
 }
@@ -99,7 +102,7 @@ model Project {
   updatedAt      DateTime      @updatedAt
   tasks          Task[]
   tags           Tag[]         @relation("projectTags")
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String?       @db.Uuid
   pinnedUsers    User[]        @relation("pinnedProjects")
 
@@ -115,11 +118,11 @@ model Team {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   tasks          Task[]
-  createdBy      User?         @relation(fields: [createdById], references: [id])
+  createdBy      User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById    String?       @db.Uuid
   tags           Tag[]         @relation("teamTags")
   pinnedUsers    User[]        @relation("pinnedTeams")
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String?       @db.Uuid
 
   @@map("teams")
@@ -129,7 +132,7 @@ model Task {
   id            String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name          String
   description   String?
-  project       Project          @relation(fields: [projectId], references: [id])
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId     String           @db.Uuid
   team          Team?            @relation(fields: [teamId], references: [id])
   teamId        String?          @db.Uuid
@@ -140,13 +143,13 @@ model Task {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   assignedUsers User[]           @relation("assignedUsers")
-  author        User             @relation(fields: [authorId], references: [id])
-  authorId      String           @db.Uuid
+  author        User?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId      String?          @db.Uuid
   comments      Comment[]
   tags          Tag[]            @relation("taskTags")
   attachments   TaskAttachment[]
   subTasks      Task[]           @relation("subTasks")
-  parentTask    Task?            @relation("subTasks", fields: [parentTaskId], references: [id])
+  parentTask    Task?            @relation("subTasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
   parentTaskId  String?          @db.Uuid
   pinnedUsers   User[]           @relation("pinnedTasks")
 
@@ -171,12 +174,12 @@ model Comment {
   content     String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  author      User      @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String    @db.Uuid
-  task        Task      @relation(fields: [taskId], references: [id])
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId      String    @db.Uuid
   mentions    User[]    @relation("mentions")
-  answerTo    Comment?  @relation("comments", fields: [answerToId], references: [id])
+  answerTo    Comment?  @relation("comments", fields: [answerToId], references: [id], onDelete: Cascade)
   answerToId  String?   @db.Uuid
   answers     Comment[] @relation("comments")
   pinnedUsers User[]    @relation("pinnedComments")
@@ -190,7 +193,7 @@ model Token {
   context   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @db.Uuid
 
   @@map("tokens")
@@ -214,7 +217,7 @@ model Notification {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @db.Uuid
 
   @@map("notifications")

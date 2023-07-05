@@ -64,7 +64,7 @@ export class UserService {
     const user = await this.prismaClient.user.delete({
       where: {
         id
-      },
+      }
     });
     return user;
   }

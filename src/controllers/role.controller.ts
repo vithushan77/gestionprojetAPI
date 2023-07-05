@@ -47,43 +47,22 @@ export class RoleController {
   async createRole(req: Request, res: Response): Promise<void> {
     const roleData = req.body;
 
-    try {
-      const createdRole = await this.roleService.createRole(roleData);
-      res.json(createdRole);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to create role",
-        error: error.message,
-      });
-    }
+    const createdRole = await this.roleService.createRole(roleData);
+    res.json(createdRole);
   }
 
   async updateRole(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const roleData = req.body;
 
-    try {
-      const updatedRole = await this.roleService.updateRole(id, roleData);
-      res.json(updatedRole);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to update role",
-        error: error.message,
-      });
-    }
+    const updatedRole = await this.roleService.updateRole(id, roleData);
+    res.json(updatedRole);
   }
 
   async deleteRole(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
-    try {
-      const deletedRole = await this.roleService.deleteRole(id);
-      res.json(deletedRole);
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to delete role",
-        error: error.message,
-      });
-    }
+    const deletedRole = await this.roleService.deleteRole(id);
+    res.json(deletedRole);
   }
 }

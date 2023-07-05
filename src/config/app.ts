@@ -2,6 +2,7 @@ import * as express from "express";
 import * as listEndpoints from "express-list-endpoints";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import * as morgan from "morgan";
+import 'express-async-errors'
 
 type Listen = Server<typeof IncomingMessage, typeof ServerResponse>;
 
