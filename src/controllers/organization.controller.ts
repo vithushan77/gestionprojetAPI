@@ -1,8 +1,8 @@
-import { Request, Response, Router } from "express";
-import { OrganizationService } from "../services";
-import { verifyAuthToken } from "../middlewares";
 import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
 import { RedisClient } from "../config";
+import { verifyAuthToken } from "../middlewares";
+import { OrganizationService } from "../services";
 
 export class OrganizationController {
     private organizationService: OrganizationService;

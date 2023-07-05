@@ -38,6 +38,23 @@ export class TeamService {
             }
         }
 
+        if (data.tags) {
+            const existingTags = await this.prismaClient.tag.findMany({
+                where: {
+                    name: {
+                        in: data.tags.map(({ name }: { name: string }) => name)
+                    }
+                }
+            });
+
+            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
+
+            data.tags = {
+                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
+                create: newTags.map(({ name }: { name: string }) => ({ name })),
+            }
+        }
+
         const team = await this.prismaClient.team.create({
             data,
         });

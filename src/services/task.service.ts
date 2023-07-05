@@ -36,8 +36,19 @@ export class TaskService {
         }
 
         if (data.tags) {
+            const existingTags = await this.prismaClient.tag.findMany({
+                where: {
+                    name: {
+                        in: data.tags.map(({ name }: { name: string }) => name)
+                    }
+                }
+            });
+
+            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
+
             data.tags = {
-                connect: data.tags.map(({ id }: { id: string }) => ({ id }))
+                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
+                create: newTags.map(({ name }: { name: string }) => ({ name })),
             }
         }
 

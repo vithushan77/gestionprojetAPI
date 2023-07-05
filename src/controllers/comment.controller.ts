@@ -1,8 +1,8 @@
-import { Request, Response, Router } from "express";
-import { CommentService } from "../services";
-import { verifyAuthToken } from "../middlewares";
 import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
 import { RedisClient } from "../config";
+import { verifyAuthToken } from "../middlewares";
+import { CommentService } from "../services";
 
 export class CommentController {
     private commentService: CommentService;

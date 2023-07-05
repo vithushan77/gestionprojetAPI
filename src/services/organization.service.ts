@@ -1,4 +1,4 @@
-import { PrismaClient, Task, Organization, User, Team } from "@prisma/client";
+import { Organization, PrismaClient, Task, Team } from "@prisma/client";
 import { RedisClient } from "../config";
 
 export class OrganizationService {
@@ -39,6 +39,23 @@ export class OrganizationService {
         if (data.teams) {
             data.teams = {
                 connect: data.teams.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.tags) {
+            const existingTags = await this.prismaClient.tag.findMany({
+                where: {
+                    name: {
+                        in: data.tags.map(({ name }: { name: string }) => name)
+                    }
+                }
+            });
+
+            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
+
+            data.tags = {
+                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
+                create: newTags.map(({ name }: { name: string }) => ({ name })),
             }
         }
 
