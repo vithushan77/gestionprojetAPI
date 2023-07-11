@@ -21,10 +21,28 @@ export class UserService {
     return user;
   }
 
+  public async getUserByEmail(email: string): Promise<any> {
+    const user = await this.prismaClient.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    return user;
+  }
+
   public async getUserById(id: string): Promise<any> {
     const user = await this.prismaClient.user.findUnique({
       where: {
         id
+      },
+    });
+    return user;
+  }
+
+  public async getUserByFirebaseId(id: string): Promise<any> {
+    const user = await this.prismaClient.user.findUnique({
+      where: {
+        firebaseId: id
       },
     });
     return user;
@@ -38,6 +56,16 @@ export class UserService {
       data.teams = {
         connect: data.teams.map(({ id }: { id: string }) => ({ id }))
       }
+    }
+
+    if (!data.roleId) {
+      const role = await this.prismaClient.role.findFirst({
+        where: {
+          name: 'USER'
+        }
+      });
+
+      data.roleId = role.id;
     }
 
     const user = await this.prismaClient.user.create({

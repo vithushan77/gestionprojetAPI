@@ -3,6 +3,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { NextFunction, Request, Response, Router } from "express";
 import { initClient } from "../../config/redis";
 import { CommentController, OrganizationController, ProjectController, RoleController, TagController, TaskController, TeamController, TokenController, TrashController, UserController } from "../../controllers";
+import { AuthController } from "../../controllers/auth.controller";
 
 const router = Router();
 const redisClient = initClient();
@@ -18,6 +19,7 @@ const commentController = new CommentController(redisClient, prismaClient);
 const organizationController = new OrganizationController(redisClient, prismaClient);
 const trashController = new TrashController(redisClient, prismaClient);
 const tagController = new TagController(redisClient, prismaClient);
+const authController = new AuthController(redisClient, prismaClient);
 
 router.get("/ping", (req, res) => {
     res.status(200).json({
@@ -35,6 +37,7 @@ router.use("/comments", commentController.routes())
 router.use("/organizations", organizationController.routes())
 router.use("/trash", trashController.routes())
 router.use("/tag", tagController.routes())
+router.use("/auth", authController.routes())
 
 // error handler
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {

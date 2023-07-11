@@ -27,13 +27,34 @@ export class UserController {
   }
 
   public async getUsers(req: Request, res: Response): Promise<void> {
+
+    if (req.query.email) {
+      const user = await this.userService.getUserByEmail(req.query.email as string);
+      if (!user) {
+        res.status(404).json({
+          message: "User not found",
+        });
+        return;
+      }
+      res.json(user);
+      return;
+    }
+
     const users = await this.userService.getUsers();
     res.json(users);
   }
 
   async getUserById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const user = await this.userService.getUserById(id);
+    const { firebase } = req.query;
+
+    let user = null;
+
+    if (firebase) {
+      user = await this.userService.getUserByFirebaseId(id);
+    } else {
+      user = await this.userService.getUserById(id);
+    }
 
     if (!user) {
       res.status(404).json({

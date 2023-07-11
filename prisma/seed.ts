@@ -43,6 +43,14 @@ const USERS = [
     username: "superadmin",
   },
   {
+    email: "abdoudu78130@gmail.com",
+    role: "SUPER_ADMIN",
+    firstName: "superadmin",
+    lastName: "superadmin",
+    username: "superadmin",
+    firebaseId: "fisyuEg0EHUzCIHBqHyoj2Ad0Eu2"
+  },
+  {
     email: "guest@mail.com",
     role: "GUEST",
     firstName: "guest",

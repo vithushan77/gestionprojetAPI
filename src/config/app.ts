@@ -3,6 +3,9 @@ import * as listEndpoints from "express-list-endpoints";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import * as morgan from "morgan";
 import 'express-async-errors'
+import * as dotenv from "dotenv";
+
+
 
 type Listen = Server<typeof IncomingMessage, typeof ServerResponse>;
 
@@ -10,6 +13,8 @@ const startServer: (router: express.Router, callback?: () => void) => { app: exp
     router,
     callback
 ) => {
+    dotenv.config();
+
     const app = express();
     const port = process.env.PORT || 3000;
     const version = process.env.VERSION || "v1";

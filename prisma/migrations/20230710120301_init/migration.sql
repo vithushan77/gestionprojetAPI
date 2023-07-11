@@ -26,6 +26,7 @@ CREATE TABLE "trash" (
 -- CreateTable
 CREATE TABLE "users" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "firebaseId" TEXT,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "confirmed" BOOLEAN NOT NULL DEFAULT false,
     "email" TEXT NOT NULL,
@@ -245,6 +246,9 @@ CREATE TABLE "_teamTags" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_name_key" ON "organizations"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_firebaseId_key" ON "users"("firebaseId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
