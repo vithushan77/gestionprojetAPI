@@ -1,8 +1,7 @@
 import { PrismaClient, User } from "@prisma/client";
-import { User as FirebaseUser, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, Auth } from "firebase/auth";
+import { Auth, User as FirebaseUser, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { RedisClient } from "../config";
 import { app } from "../config/firebase";
-import { UserService } from "./user.service";
 
 export class AuthService {
   private prismaClient: PrismaClient;
@@ -56,8 +55,38 @@ export class AuthService {
         token: token,
       },
       select: {
-        user: true,
-      },
+        user: {
+          include: {
+            teams: {
+              include: {
+                organization: {},
+                members: {
+                  select: {
+                    id: true,
+                  }
+                },
+                projects: true,
+              }
+            },
+            lastTeam: {
+              include: {
+                organization: true,
+                members: {
+                  select: {
+                    id: true,
+                  }
+                },
+                projects: true,
+              }
+            },
+            role: true,
+            assignedTasks: true,
+            notifications: true,
+            comments: true,
+            activities: true
+          }
+        },
+      }
     });
 
     if (!findToken) {
@@ -93,5 +122,15 @@ export class AuthService {
     );
 
     return userCredential.user;
+  }
+
+  async logout(
+    token: string,
+  ) {
+    await this.prismaClient.token.delete({
+      where: {
+        token: token,
+      },
+    });
   }
 }

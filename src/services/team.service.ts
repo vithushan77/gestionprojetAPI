@@ -26,34 +26,7 @@ export class TeamService {
 
     public async createTeam(data: any): Promise<Team> {
 
-        if (data.members) {
-            data.members = {
-                connect: data.members.map(({ id }: { id: string }) => ({ id }))
-            }
-        }
-
-        if (data.projects) {
-            data.projects = {
-                connect: data.projects.map(({ id }: { id: string }) => ({ id }))
-            }
-        }
-
-        if (data.tags) {
-            const existingTags = await this.prismaClient.tag.findMany({
-                where: {
-                    name: {
-                        in: data.tags.map(({ name }: { name: string }) => name)
-                    }
-                }
-            });
-
-            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
-
-            data.tags = {
-                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
-                create: newTags.map(({ name }: { name: string }) => ({ name })),
-            }
-        }
+        data = await this.formatData(data);
 
         const team = await this.prismaClient.team.create({
             data,
@@ -61,7 +34,10 @@ export class TeamService {
         return team;
     }
 
-    public async updateTeam(id: string, data: Team): Promise<Team> {
+    public async updateTeam(id: string, data: any): Promise<Team> {
+
+        data = await this.formatData(data);
+
         const team = await this.prismaClient.team.update({
             where: {
                 id
@@ -108,7 +84,20 @@ export class TeamService {
                 id,
             },
             include: {
-                tasks: true,
+                tasks: {
+                    include: {
+                        attachments: true,
+                        tags: true,
+                        assignedUsers: true,
+                        author: true,
+                        comments: true,
+                        subTasks: true,
+                        parentTask: true,
+                        status: true,
+                        team: true,
+                        project: true,
+                    }
+                }
             },
         });
         return team.tasks;
@@ -141,5 +130,61 @@ export class TeamService {
             },
         });
         return team.members;
+    }
+
+    private async formatData(data: any): Promise<any> {
+        if (data.members) {
+            data.members = {
+                connect: data.members.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.projects) {
+            data.projects = {
+                connect: data.projects.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.tags) {
+            const existingTags = await this.prismaClient.tag.findMany({
+                where: {
+                    name: {
+                        in: data.tags.map(({ name }: { name: string }) => name)
+                    }
+                }
+            });
+
+            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
+
+            data.tags = {
+                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
+                create: newTags.map(({ name }: { name: string }) => ({ name })),
+            }
+        }
+
+
+        if (data.tasks) {
+            data.tasks = {
+                connect: data.tasks.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.organization) {
+            delete data.organization;
+        }
+
+        if (data.lastTeamUsers) {
+            data.lastTeamUsers = {
+                connect: data.lastTeamUsers.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.pinnedUsers) {
+            data.pinnedUsers = {
+                connect: data.pinnedUsers.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        return data;
     }
 }

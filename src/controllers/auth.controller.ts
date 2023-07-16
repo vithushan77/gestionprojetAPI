@@ -20,6 +20,7 @@ export class AuthController {
         router.post("/authenticate/email", this.authenticateWithEmailAndPassword.bind(this));
         router.post("/signup", this.createUserWithEmailAndPassword.bind(this))
         router.get("/me", this.me.bind(this))
+        router.delete("/logout", this.logout.bind(this))
 
         return router;
     }
@@ -66,6 +67,7 @@ export class AuthController {
         }
 
         await this.authService.persistToken(token, user);
+        await this.userService.updateUserLastLogin(user.id);
 
         res.status(200).json({
             token,
@@ -99,5 +101,21 @@ export class AuthController {
             message: "User created",
         });
 
+    }
+
+    async logout(req: Request, res: Response) {
+        const token = req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        await this.authService.logout(token);
+
+        res.status(200).json({
+            message: "Logged out",
+        });
     }
 }

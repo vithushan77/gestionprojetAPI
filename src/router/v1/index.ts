@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { NextFunction, Request, Response, Router } from "express";
 import { initClient } from "../../config/redis";
-import { CommentController, OrganizationController, ProjectController, RoleController, TagController, TaskController, TeamController, TokenController, TrashController, UserController } from "../../controllers";
+import { CommentController, OrganizationController, ProjectController, RoleController, TagController, TaskController, TaskStatusController, TeamController, TokenController, TrashController, UserController } from "../../controllers";
 import { AuthController } from "../../controllers/auth.controller";
 
 const router = Router();
@@ -15,6 +15,7 @@ const projectController = new ProjectController(redisClient, prismaClient);
 const teamController = new TeamController(redisClient, prismaClient);
 const tokenController = new TokenController(redisClient, prismaClient);
 const taskController = new TaskController(redisClient, prismaClient);
+const taskStatusController = new TaskStatusController(redisClient, prismaClient);
 const commentController = new CommentController(redisClient, prismaClient);
 const organizationController = new OrganizationController(redisClient, prismaClient);
 const trashController = new TrashController(redisClient, prismaClient);
@@ -33,10 +34,11 @@ router.use("/projects", projectController.routes())
 router.use("/teams", teamController.routes())
 router.use("/tokens", tokenController.routes())
 router.use("/tasks", taskController.routes())
+router.use("/task-status", taskStatusController.routes())
 router.use("/comments", commentController.routes())
 router.use("/organizations", organizationController.routes())
 router.use("/trash", trashController.routes())
-router.use("/tag", tagController.routes())
+router.use("/tags", tagController.routes())
 router.use("/auth", authController.routes())
 
 // error handler
@@ -84,6 +86,7 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
                     code: prismaError.code,
                 });
             default:
+                console.log(prismaError);
                 return res.status(500).json({
                     message: prismaError.message,
                     code: prismaError.code,
@@ -93,6 +96,7 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 
 
+    console.log(err);
     return res.status(500).json({
         message: err.message,
     });

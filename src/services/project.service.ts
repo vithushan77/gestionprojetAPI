@@ -13,28 +13,20 @@ export class ProjectService {
             where: {
                 id
             },
+            include: {
+                tags: true,
+                pinnedUsers: true,
+                organization: true,
+                teams: true,
+            }
         });
         return project;
     }
 
     public async createProject(data: any): Promise<any> {
 
-        if (data.tags) {
-            const existingTags = await this.prismaClient.tag.findMany({
-                where: {
-                    name: {
-                        in: data.tags.map(({ name }: { name: string }) => name)
-                    }
-                }
-            });
+        data = await this.formatData(data);
 
-            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
-
-            data.tags = {
-                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
-                create: newTags.map(({ name }: { name: string }) => ({ name })),
-            }
-        }
 
         const project = await this.prismaClient.project.create({
             data,
@@ -42,7 +34,10 @@ export class ProjectService {
         return project;
     }
 
-    public async updateProject(id: string, data: Project): Promise<any> {
+    public async updateProject(id: string, data: any): Promise<any> {
+
+        data = await this.formatData(data);
+
         const project = await this.prismaClient.project.update({
             where: {
                 id
@@ -64,5 +59,43 @@ export class ProjectService {
     public async getProjects(): Promise<any> {
         const projects = await this.prismaClient.project.findMany();
         return projects;
+    }
+
+    private async formatData(data: any): Promise<any> {
+        if (data.tags) {
+            const existingTags = await this.prismaClient.tag.findMany({
+                where: {
+                    name: {
+                        in: data.tags.map(({ name }: { name: string }) => name)
+                    }
+                }
+            });
+
+            const newTags = data.tags.filter(({ name }: { name: string }) => !existingTags.find((tag: any) => tag.name === name));
+
+            data.tags = {
+                connect: existingTags.map(({ id }: { id: string }) => ({ id })),
+                create: newTags.map(({ name }: { name: string }) => ({ name })),
+            }
+        }
+
+
+        if (data.pinnedUsers) {
+            data.pinnedUsers = {
+                connect: data.pinnedUsers.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.organization) {
+            delete data.organization;
+        }
+
+        if (data.teams) {
+            data.teams = {
+                connect: data.teams.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        return data;
     }
 }

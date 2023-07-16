@@ -15,17 +15,17 @@ export class CommentService {
             },
             include: {
                 mentions: true,
+                task: true,
+                author: true,
+                answers: true,
+                answerTo: true,
             },
         });
         return comment;
     }
 
     public async createComment(data: any): Promise<Comment> {
-        if (data.mentions) {
-            data.mentions = {
-                connect: data.mentions.map(({ id }: { id: string }) => ({ id }))
-            }
-        }
+        data = await this.formatData(data);
 
         const comment = await this.prismaClient.comment.create({
             data,
@@ -34,6 +34,8 @@ export class CommentService {
     }
 
     public async updateComment(id: string, data: Comment): Promise<Comment> {
+        data = await this.formatData(data);
+
         const comment = await this.prismaClient.comment.update({
             where: {
                 id
@@ -67,5 +69,25 @@ export class CommentService {
             },
         });
         return comment.mentions;
+    }
+
+    private async formatData(data: any): Promise<any> {
+        delete data.task;
+        delete data.author;
+        delete data.answerTo;
+
+        if (data.mentions) {
+            data.mentions = {
+                connect: data.mentions.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        if (data.answers) {
+            data.answers = {
+                connect: data.answers.map(({ id }: { id: string }) => ({ id }))
+            }
+        }
+
+        return data;
     }
 }

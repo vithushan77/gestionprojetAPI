@@ -9,4 +9,5 @@ export * from './team.controller'
 export * from './token.controller'
 export * from './trash.controller'
 export * from './user.controller'
+export * from './task.status.controller'
 

@@ -5,10 +5,15 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE "organizations" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
+    "description" TEXT,
+    "plan" TEXT DEFAULT 'FREE',
+    "type" TEXT DEFAULT 'PERSONAL',
+    "icon" TEXT,
+    "color" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdById" UUID,
-    "metadata" JSONB,
+    "metadata" JSONB DEFAULT '{}',
 
     CONSTRAINT "organizations_pkey" PRIMARY KEY ("id")
 );
@@ -18,7 +23,7 @@ CREATE TABLE "trash" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "metadata" JSONB,
+    "metadata" JSONB DEFAULT '{}',
 
     CONSTRAINT "trash_pkey" PRIMARY KEY ("id")
 );
@@ -38,6 +43,11 @@ CREATE TABLE "users" (
     "roleId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "metadata" JSONB DEFAULT '{}',
+    "lastLogin" TIMESTAMP(3),
+    "lastProjectId" UUID,
+    "lastTeamId" UUID,
+    "lastOrganizationId" UUID,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -47,7 +57,7 @@ CREATE TABLE "activities" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "metadata" JSONB,
+    "metadata" JSONB DEFAULT '{}',
     "type" TEXT NOT NULL,
     "userId" UUID,
 
@@ -67,6 +77,8 @@ CREATE TABLE "roles" (
 CREATE TABLE "projects" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
+    "color" TEXT,
+    "icon" TEXT,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -80,6 +92,8 @@ CREATE TABLE "teams" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "icon" TEXT,
+    "color" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdById" UUID,
@@ -93,9 +107,11 @@ CREATE TABLE "tasks" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "projectId" UUID NOT NULL,
+    "color" TEXT,
+    "icon" TEXT,
+    "projectId" UUID,
     "teamId" UUID,
-    "status" TEXT NOT NULL DEFAULT 'TODO',
+    "statusId" UUID NOT NULL,
     "priority" TEXT NOT NULL DEFAULT 'LOW',
     "type" TEXT NOT NULL DEFAULT 'TASK',
     "dueDate" TIMESTAMP(3),
@@ -108,13 +124,25 @@ CREATE TABLE "tasks" (
 );
 
 -- CreateTable
+CREATE TABLE "task_statuses" (
+    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "name" TEXT NOT NULL,
+    "color" TEXT,
+    "icon" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "task_statuses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "task_attachments" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "metadata" JSONB,
+    "metadata" JSONB DEFAULT '{}',
     "taskId" UUID NOT NULL,
 
     CONSTRAINT "task_attachments_pkey" PRIMARY KEY ("id")
@@ -151,6 +179,8 @@ CREATE TABLE "tags" (
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "color" TEXT,
+    "icon" TEXT,
 
     CONSTRAINT "tags_pkey" PRIMARY KEY ("id")
 );
@@ -159,6 +189,7 @@ CREATE TABLE "tags" (
 CREATE TABLE "notifications" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "content" TEXT NOT NULL,
+    "metadata" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" UUID NOT NULL,
@@ -260,6 +291,9 @@ CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 CREATE UNIQUE INDEX "roles_name_key" ON "roles"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "task_statuses_name_key" ON "task_statuses"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "tokens_token_key" ON "tokens"("token");
 
 -- CreateIndex
@@ -350,6 +384,15 @@ ALTER TABLE "organizations" ADD CONSTRAINT "organizations_createdById_fkey" FORE
 ALTER TABLE "users" ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_lastProjectId_fkey" FOREIGN KEY ("lastProjectId") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_lastTeamId_fkey" FOREIGN KEY ("lastTeamId") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_lastOrganizationId_fkey" FOREIGN KEY ("lastOrganizationId") REFERENCES "organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "activities" ADD CONSTRAINT "activities_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -366,6 +409,9 @@ ALTER TABLE "tasks" ADD CONSTRAINT "tasks_projectId_fkey" FOREIGN KEY ("projectI
 
 -- AddForeignKey
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tasks" ADD CONSTRAINT "tasks_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "task_statuses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
