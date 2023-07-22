@@ -55,37 +55,7 @@ export class AuthService {
         token: token,
       },
       select: {
-        user: {
-          include: {
-            teams: {
-              include: {
-                organization: {},
-                members: {
-                  select: {
-                    id: true,
-                  }
-                },
-                projects: true,
-              }
-            },
-            lastTeam: {
-              include: {
-                organization: true,
-                members: {
-                  select: {
-                    id: true,
-                  }
-                },
-                projects: true,
-              }
-            },
-            role: true,
-            assignedTasks: true,
-            notifications: true,
-            comments: true,
-            activities: true
-          }
-        },
+        user: true
       }
     });
 

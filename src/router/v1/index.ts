@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { NextFunction, Request, Response, Router } from "express";
-import { initClient } from "../../config/redis";
-import { CommentController, OrganizationController, ProjectController, RoleController, TagController, TaskController, TaskStatusController, TeamController, TokenController, TrashController, UserController } from "../../controllers";
+import { initClient } from "../../config";
+import { RoleController, UserController } from "../../controllers";
 import { AuthController } from "../../controllers/auth.controller";
 
 const router = Router();
@@ -11,15 +11,6 @@ const prismaClient = new PrismaClient();
 
 const userController = new UserController(redisClient, prismaClient);
 const roleController = new RoleController(redisClient, prismaClient);
-const projectController = new ProjectController(redisClient, prismaClient);
-const teamController = new TeamController(redisClient, prismaClient);
-const tokenController = new TokenController(redisClient, prismaClient);
-const taskController = new TaskController(redisClient, prismaClient);
-const taskStatusController = new TaskStatusController(redisClient, prismaClient);
-const commentController = new CommentController(redisClient, prismaClient);
-const organizationController = new OrganizationController(redisClient, prismaClient);
-const trashController = new TrashController(redisClient, prismaClient);
-const tagController = new TagController(redisClient, prismaClient);
 const authController = new AuthController(redisClient, prismaClient);
 
 router.get("/ping", (req, res) => {
@@ -30,15 +21,6 @@ router.get("/ping", (req, res) => {
 
 router.use("/users", userController.routes())
 router.use("/roles", roleController.routes())
-router.use("/projects", projectController.routes())
-router.use("/teams", teamController.routes())
-router.use("/tokens", tokenController.routes())
-router.use("/tasks", taskController.routes())
-router.use("/task-status", taskStatusController.routes())
-router.use("/comments", commentController.routes())
-router.use("/organizations", organizationController.routes())
-router.use("/trash", trashController.routes())
-router.use("/tags", tagController.routes())
 router.use("/auth", authController.routes())
 
 // error handler

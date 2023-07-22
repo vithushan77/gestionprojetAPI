@@ -48,13 +48,7 @@ export class UserController {
     const { id } = req.params;
     const { firebase } = req.query;
 
-    let user = null;
-
-    if (firebase) {
-      user = await this.userService.getUserByFirebaseId(id);
-    } else {
-      user = await this.userService.getUserById(id);
-    }
+    let user = await this.userService.getUserById(id);
 
     if (!user) {
       res.status(404).json({

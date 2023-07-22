@@ -1,7 +1,6 @@
 import { PrismaClient, User } from "@prisma/client";
 import { SecurityUtils } from "../utils";
 import { RedisClient } from "../config";
-import { ProjectService } from "./project.service";
 
 export class UserService {
   private prismaClient: PrismaClient;
@@ -37,30 +36,12 @@ export class UserService {
         id
       },
       include: {
-        teams: {
-          include: {
-            organization: true
-          }
-        },
-        lastTeam: true,
         role: true,
-        assignedTasks: true,
-        notifications: true,
-        comments: true,
-        activities: true
       }
     });
     return user;
   }
 
-  public async getUserByFirebaseId(id: string): Promise<any> {
-    const user = await this.prismaClient.user.findUnique({
-      where: {
-        firebaseId: id
-      },
-    });
-    return user;
-  }
 
   public async createUser(data: any): Promise<any> {
     data = await this.formatData(data);
@@ -90,17 +71,7 @@ export class UserService {
         id
       },
       include: {
-        teams: {
-          include: {
-            organization: true
-          }
-        },
-        lastTeam: true,
         role: true,
-        assignedTasks: true,
-        notifications: true,
-        comments: true,
-        activities: true
       },
       data,
     });
@@ -184,44 +155,7 @@ export class UserService {
       delete data.password;
     }
 
-    if (data.lastTeam && !data.lastTeamId) {
-      data.lastTeamId = data.lastTeam.id;
-    }
-
-    if (data.lastProject && !data.lastProjectId) {
-      data.lastProjectId = data.lastProject.id;
-    }
-
-    if (data.lastOrganization && !data.lastOrganizationId) {
-      data.lastOrganizationId = data.lastOrganization.id;
-    }
-
-
-    delete data.lastTeam;
-    delete data.lastProject;
-    delete data.lastOrganization;
     delete data.role;
-
-    if (data.teams) {
-      data.teams = {
-        connect: data.teams.map(({ id }: { id: string }) => ({ id }))
-      }
-    }
-
-    data = await this.formatArrayData(data, 'assignedTasks');
-    data = await this.formatArrayData(data, 'createdTasks');
-    data = await this.formatArrayData(data, 'createdTeams');
-    data = await this.formatArrayData(data, 'tokens');
-    data = await this.formatArrayData(data, 'comments');
-    data = await this.formatArrayData(data, 'mentionnedComments');
-    data = await this.formatArrayData(data, 'notifications');
-    data = await this.formatArrayData(data, 'createdOrganizations');
-    data = await this.formatArrayData(data, 'pinnedProjects');
-    data = await this.formatArrayData(data, 'pinnedTeams');
-    data = await this.formatArrayData(data, 'pinnedTasks');
-    data = await this.formatArrayData(data, 'pinnedComments');
-    data = await this.formatArrayData(data, 'pinnedOrganizations');
-    data = await this.formatArrayData(data, 'activities');
 
     return data;
   }
