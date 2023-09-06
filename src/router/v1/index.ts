@@ -2,16 +2,22 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { NextFunction, Request, Response, Router } from "express";
 import { initClient } from "../../config";
-import { RoleController, UserController } from "../../controllers";
-import { AuthController } from "../../controllers/auth.controller";
+import {RoleController, UserController, TaskStatusController} from "../../controllers";
+import { AuthController } from "../../controllers";
+import {ProjectController} from "../../controllers";
+import {TaskController} from "../../controllers";
+import {TokenController} from "../../controllers";
 
 const router = Router();
 const redisClient = initClient();
 const prismaClient = new PrismaClient();
-
 const userController = new UserController(redisClient, prismaClient);
 const roleController = new RoleController(redisClient, prismaClient);
 const authController = new AuthController(redisClient, prismaClient);
+const projectController = new ProjectController(redisClient, prismaClient);
+const taskController = new TaskController(redisClient, prismaClient);
+const tokenController = new TokenController(redisClient, prismaClient);
+const taskStatusController = new TaskStatusController(redisClient, prismaClient);
 
 router.get("/ping", (req, res) => {
     res.status(200).json({
@@ -22,6 +28,10 @@ router.get("/ping", (req, res) => {
 router.use("/users", userController.routes())
 router.use("/roles", roleController.routes())
 router.use("/auth", authController.routes())
+router.use("/projects", projectController.routes())
+router.use("/tasks", taskController.routes())
+router.use("/tokens",tokenController.routes())
+router.use("/task-status",taskStatusController.routes())
 
 // error handler
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {

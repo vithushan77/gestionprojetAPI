@@ -15,14 +15,81 @@ datasource db {
 // - Will be used to manage the development of GreenBoard
 
 model User {
-  id    String @id @default(uuid())
-  name  String
-  posts Post[]
+  id           String   @id @default(uuid()) @db.Uuid
+  firstName    String
+  lastName     String
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         Role     @relation(fields: [roleId], references: [id])
+  roleId       String   @db.Uuid
+  tokens       Token[]
+  firebaseId   String?  @unique
+  createdTask  Task[]   @relation("createdBy")
+  asignTask    Task[]
+  Project      Project? @relation(fields: [projectId], references: [id])
+  projectId    String?  @db.Uuid
+
+  @@map("users")
 }
 
-model Post {
-  id      String @id
-  content String
-  author  User   @relation(fields: [userId], references: [id])
-  userId  String
+model Role {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique
+  users User[]
+
+  @@map("roles")
+}
+
+model Token {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  token     String   @unique
+  context   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+
+  @@map("tokens")
+}
+
+model Project {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  tasks       Task[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String     @db.Uuid
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  dueDate     DateTime?
+  createdBy   User       @relation("createdBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdById String     @db.Uuid
+  asigneTo    User?      @relation(fields: [asignedToId], references: [id])
+  asignedToId String?    @db.Uuid
+  status      TaskStatus @relation("status", fields: [statusId], references: [id], onDelete: Cascade)
+  statusId    String     @db.Uuid
+
+  @@map("tasks")
+}
+
+model TaskStatus {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  tasks     Task[]   @relation("status")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("task_status")
 }

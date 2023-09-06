@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { Request, Response, Router } from "express";
-import { RedisClient } from "../config";
-import { AuthService, UserService } from "../services";
+import {PrismaClient} from "@prisma/client";
+import {Request, Response, Router} from "express";
+import {RedisClient} from "../config";
+import {AuthService, UserService} from "../services";
 
 export class AuthController {
     private authService: AuthService;
@@ -42,10 +42,8 @@ export class AuthController {
         });
     }
 
-
-    // Authenticate user using Firebase ID token
     async authenticateWithEmailAndPassword(req: Request, res: Response) {
-        const { email, password } = req.body;
+        const {email, password} = req.body;
 
         const firebaseUser = await this.authService
             .authenticateWithEmailAndPassword(email, password)
@@ -67,7 +65,6 @@ export class AuthController {
         }
 
         await this.authService.persistToken(token, user);
-        await this.userService.updateUserLastLogin(user.id);
 
         res.status(200).json({
             token,
@@ -78,7 +75,7 @@ export class AuthController {
     // Create user using email and password
     async createUserWithEmailAndPassword(req: Request, res: Response) {
 
-        const { email, password } = req.body;
+        const {email, password} = req.body;
 
         const userExists = await this.authService.userExists(email);
 

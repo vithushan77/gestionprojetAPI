@@ -9,17 +9,7 @@ export class UserService {
     this.prismaClient = prismaClient;
   }
 
-  public async getUserByToken(token: string): Promise<any> {
-    const user = await this.prismaClient.token.findUnique({
-      where: {
-        token: token,
-      },
-      select: {
-        user: true,
-      },
-    });
-    return user;
-  }
+
 
   public async getUserByEmail(email: string): Promise<any> {
     const user = await this.prismaClient.user.findUnique({
@@ -88,71 +78,28 @@ export class UserService {
   }
 
   public async getUsers(): Promise<any> {
-    const users = await this.prismaClient.user.findMany();
+    const users = await this.prismaClient.user.findMany({
+        include: {
+            role: true,
+        }
+    });
     return users;
   }
 
-
-  public async updateUserLastLogin(id: any) {
-
-    const user = await this.prismaClient.user.findUnique({
-      where: {
-        id
-      },
-      include: {
-        lastTeam: {
-          include: {
-            projects: true
-          }
-        },
-        lastProject: true,
-        teams: {
-          include: {
-            projects: true
-          },
-        }
-      }
-    });
-
-    let lastTeam = user.lastTeam;
-    let lastProjectId = user.lastProjectId;
-    let lastOrganizationId = user.lastOrganizationId;
-
-    const firstTeam = user.teams[0];
-
-    if (!lastTeam && firstTeam) {
-      lastTeam = firstTeam;
-    }
-
-    if (!lastProjectId && lastTeam && lastTeam.projects.length > 0) {
-      // take a random project from the list of all prismaClient.projects
-      const projects = await this.prismaClient.project.findMany();
-      lastProjectId = projects[0].id;
-    }
-
-    if (!lastOrganizationId && lastTeam) {
-      lastOrganizationId = lastTeam.organizationId;
-    }
-
-    const updateUser = await this.prismaClient.user.update({
-      where: {
-        id
-      },
-      data: {
-        lastLogin: new Date(),
-        lastTeamId: lastTeam.id,
-        lastProjectId,
-        lastOrganizationId
-      }
-    });
-
-    return updateUser;
-  }
 
   async formatData(data: any) {
     if (data.password) {
       data.passwordHash = SecurityUtils.hashPassword(data.password);
       delete data.password;
+    }
+    if (!data.roleId) {
+      const role = await this.prismaClient.role.findFirst({
+        where: {
+          name: 'USER'
+        }
+      });
+
+      data.roleId = role.id;
     }
 
     delete data.role;

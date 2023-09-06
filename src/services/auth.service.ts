@@ -39,23 +39,13 @@ export class AuthService {
     });
   }
 
-  async getUserByFirebaseId(id: string): Promise<any> {
-    const user = await this.prismaClient.user.findUnique({
-      where: {
-        firebaseId: id
-      },
-    });
-    return user;
-  }
-
-
   async me(token: string): Promise<User> {
     let findToken = await this.prismaClient.token.findUnique({
       where: {
         token: token,
       },
       select: {
-        user: true
+        user: true,
       }
     });
 
@@ -64,6 +54,14 @@ export class AuthService {
     }
 
     return findToken.user;
+  }
+  async getUserByFirebaseId(id: string): Promise<any> {
+    const user = await this.prismaClient.user.findUnique({
+      where: {
+        firebaseId: id
+      },
+    });
+    return user;
   }
 
 
@@ -94,13 +92,15 @@ export class AuthService {
     return userCredential.user;
   }
 
+
+
   async logout(
     token: string,
   ) {
-    await this.prismaClient.token.delete({
+    /*await this.prismaClient.token.delete({
       where: {
         token: token,
       },
-    });
+    });*/
   }
 }
